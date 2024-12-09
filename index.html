@@ -1,0 +1,417 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.3">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1">&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1">&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1">&lt;title&gt;Dynamic Grid with Block Compaction&lt;/title&gt;</p>
+<p class="p1">&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>body {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: grid;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>grid-template-rows: repeat(12, 1fr);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>grid-template-columns: 1fr 1fr 1.75fr 1fr 1fr; /* Adjusted main column width */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>height: 100vh;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: black;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.cell {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: 1px transparent; /* Transparent cell borders */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>position: relative;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.block {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: rgba(255, 255, 255, 0); /* Fully transparent block background */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: white;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>width: 80%;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>height: 80%;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: .8rem;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 5px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cursor: grab;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>position: relative;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>transition: all 0.3s ease;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.block.trash {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: gray;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: .65rem;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.delete-btn {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>position: absolute;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>top: 1px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>right: 1px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: transparent; /* Transparent delete button background */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: white;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: none;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border-radius: 50%;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>width: 1px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>height: 10px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: 12px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cursor: pointer;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: none;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.block:not(.trash):hover .delete-btn {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>display: block;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>.editable {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>border: none;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>background: transparent;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>color: inherit;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>font-size: inherit;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>outline: none;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>width: auto;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p1">&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const rows = 12;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const cols = 5;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>const mainColumn = Math.floor(cols / 2);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>let draggedBlock = null;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function initializeGrid() {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const fragment = document.createDocumentFragment();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>for (let row = 0; row &lt; rows; row++) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>for (let col = 0; col &lt; cols; col++) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const cell = document.createElement("div");</p>
+<p class="p1"><span class="Apple-converted-space">        </span>cell.classList.add("cell");</p>
+<p class="p1"><span class="Apple-converted-space">        </span>cell.dataset.row = row;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>cell.dataset.col = col;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>fragment.appendChild(cell);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>document.body.appendChild(fragment);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function createBlock(content, isTrash = false, blockIndex = null) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const block = document.createElement("div");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>block.classList.add("block");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>block.draggable = true;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Word limit for blanks</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const maxWords = 3;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Handle fill-in-the-blank template for new blocks</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (content === "New Block") {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const template = "This is ___ for ___."; // Example template</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const parts = template.split("___");</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>parts.forEach((part, index) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const span = document.createElement("span");</p>
+<p class="p1"><span class="Apple-converted-space">        </span>span.textContent = part; // Non-editable part</p>
+<p class="p1"><span class="Apple-converted-space">        </span>block.appendChild(span);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (index &lt; parts.length - 1) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>const blank = document.createElement("span");</p>
+<p class="p1"><span class="Apple-converted-space">          </span>blank.contentEditable = "true"; // Editable blank</p>
+<p class="p1"><span class="Apple-converted-space">          </span>blank.classList.add("editable");</p>
+<p class="p1"><span class="Apple-converted-space">          </span>blank.textContent = "______"; // Placeholder for blank</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">          </span>// Add word limit enforcement</p>
+<p class="p1"><span class="Apple-converted-space">          </span>blank.addEventListener("input", () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const words = blank.textContent.trim().split(/\s+/);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (words.length &gt; maxWords) {</p>
+<p class="p1"><span class="Apple-converted-space">              </span>blank.textContent = words.slice(0, maxWords).join(" "); // Trim to maxWords</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">          </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">          </span>block.appendChild(blank);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>// Regular block content</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const text = document.createElement("div");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>text.textContent = content;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>text.innerHTML = content.replace(/\n/g, "&lt;br&gt;"); // Convert \n to &lt;br&gt; for line breaks</p>
+<p class="p1"><span class="Apple-converted-space">      </span>text.classList.add("editable");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>block.appendChild(text);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Add delete button for non-fixed blocks</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!isTrash &amp;&amp; blockIndex !== 1 &amp;&amp; blockIndex !== 10) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const deleteBtn = document.createElement("button");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>deleteBtn.textContent = "X";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>deleteBtn.classList.add("delete-btn");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>deleteBtn.addEventListener("click", () =&gt; deleteBlock(block));</p>
+<p class="p1"><span class="Apple-converted-space">      </span>block.appendChild(deleteBtn);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else if (blockIndex === 1 || blockIndex === 10) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>block.dataset.fixed = "true"; // Mark fixed blocks</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>block.addEventListener("dragstart", onDragStart);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>block.addEventListener("dragend", onDragEnd);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>return block;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function deleteBlock(block) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (block.dataset.fixed === "true") {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.warn("Cannot delete Fixed Top or Block 10.");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const parentCell = block.parentElement;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!parentCell) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>sendBlockToNearestTrash(block, parentCell);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const newBlock = createBlock("New Block", false, true);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>parentCell.appendChild(newBlock);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>collapseMainColumn();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function sendBlockToNearestTrash(block, originCell) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const trashCells = Array.from(document.querySelectorAll(`.cell:not([data-col="${mainColumn}"])`));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const originRow = parseInt(originCell.dataset.row, 10);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Filter cells in the same row</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const sameRowCells = trashCells.filter((cell) =&gt; parseInt(cell.dataset.row, 10) === originRow);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Sort cells in the same row by column proximity to the main column</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const sortedSameRowCells = sameRowCells.sort((a, b) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const colA = Math.abs(parseInt(a.dataset.col, 10) - mainColumn);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const colB = Math.abs(parseInt(b.dataset.col, 10) - mainColumn);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return colA - colB; // Prioritize closer columns</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Check for the nearest empty cell in the same row</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const nearestSameRowCell = sortedSameRowCells.find((cell) =&gt; !cell.querySelector(".block"));</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (nearestSameRowCell) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>nearestSameRowCell.appendChild(block); // Move block to the nearest empty cell in the same row</p>
+<p class="p1"><span class="Apple-converted-space">      </span>block.classList.add("trash"); // Add trash-specific styling</p>
+<p class="p1"><span class="Apple-converted-space">      </span>block.querySelector(".editable").contentEditable = false; // Make block non-editable in trash</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Expand to other rows if no cell in the same row is available</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const rowsAboveAndBelow = trashCells.filter((cell) =&gt; parseInt(cell.dataset.row, 10) !== originRow);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Sort rows alternately above and below the origin row and prioritize column proximity</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const sortedOtherRowCells = rowsAboveAndBelow.sort((a, b) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const rowA = parseInt(a.dataset.row, 10);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const rowB = parseInt(b.dataset.row, 10);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const rowDiffA = Math.abs(rowA - originRow);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const rowDiffB = Math.abs(rowB - originRow);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>// If rows are equally distant, sort by proximity to the main column</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (rowDiffA === rowDiffB) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const colA = Math.abs(parseInt(a.dataset.col, 10) - mainColumn);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const colB = Math.abs(parseInt(b.dataset.col, 10) - mainColumn);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return colA - colB;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>return rowDiffA - rowDiffB;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Find the nearest empty cell in other rows</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const nearestOtherRowCell = sortedOtherRowCells.find((cell) =&gt; !cell.querySelector(".block"));</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (nearestOtherRowCell) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>nearestOtherRowCell.appendChild(block); // Move block to the nearest empty cell in other rows</p>
+<p class="p1"><span class="Apple-converted-space">      </span>block.classList.add("trash"); // Add trash-specific styling</p>
+<p class="p1"><span class="Apple-converted-space">      </span>block.querySelector(".editable").contentEditable = false; // Make block non-editable in trash</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.warn("No empty space in the trash.");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function collapseMainColumn() {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const mainCells = Array.from(document.querySelectorAll(`.cell[data-col="${mainColumn}"]`));</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>for (let i = 1; i &lt; mainCells.length - 2; i++) { // Avoid collapsing into Block 10</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const currentCell = mainCells[i];</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (!currentCell.querySelector(".block")) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>for (let j = i + 1; j &lt; mainCells.length - 1; j++) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>const nextCell = mainCells[j];</p>
+<p class="p1"><span class="Apple-converted-space">          </span>const blockToMove = nextCell.querySelector(".block");</p>
+<p class="p1"><span class="Apple-converted-space">          </span>if (blockToMove) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>currentCell.appendChild(blockToMove);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>break;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function pushBlockDown(block, targetCell) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const mainCells = Array.from(document.querySelectorAll(`.cell[data-col="${mainColumn}"]`));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const targetIndex = mainCells.indexOf(targetCell);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Prevent pushing into the cell below Block 10</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (targetIndex &gt;= mainCells.length - 2) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.warn("Cannot push blocks below Block 10.");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const nextCell = mainCells[targetIndex + 1];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (nextCell.querySelector(".block")) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const blockToPush = nextCell.querySelector(".block");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pushBlockDown(blockToPush, nextCell);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>nextCell.appendChild(block);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function placeBlockInMain(block, targetCell) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const mainCells = Array.from(document.querySelectorAll(`.cell[data-col="${mainColumn}"]`));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const targetIndex = mainCells.indexOf(targetCell);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Count the total number of blocks in the main column</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const totalBlocks = mainCells.reduce((count, cell) =&gt; count + (cell.querySelector(".block") ? 1 : 0), 0);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Prevent exceeding 10 blocks</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (totalBlocks &gt;= 10 &amp;&amp; !block.parentElement) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.warn("Cannot add more than 10 blocks to the main column.");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Restrict placement to middle cells and avoid placing below Block 10</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (targetIndex &lt;= 0 || targetIndex &gt;= mainCells.length - 1) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.warn("Blocks cannot replace Fixed Top or Block 10.");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Prevent placing blocks in the cell directly below Block 10</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (targetIndex === mainCells.length - 2) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.warn("Cannot place blocks below Block 10.");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>return;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Check if the block is from the trash</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (block.classList.contains("trash")) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>// Replace the block in the target cell</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (targetCell.querySelector(".block")) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const existingBlock = targetCell.querySelector(".block");</p>
+<p class="p1"><span class="Apple-converted-space">        </span>sendBlockToNearestTrash(existingBlock, targetCell); // Send the replaced block to the trash</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>targetCell.appendChild(block); // Place the block from the trash</p>
+<p class="p1"><span class="Apple-converted-space">      </span>block.classList.remove("trash"); // Remove trash-specific styling</p>
+<p class="p1"><span class="Apple-converted-space">      </span>block.querySelector(".editable").contentEditable = false; // Trash blocks become non-editable</p>
+<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>// Handle blocks already in the main column</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (targetCell.querySelector(".block")) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const existingBlock = targetCell.querySelector(".block");</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pushBlockDown(existingBlock, targetCell); // Push down the existing block</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>targetCell.appendChild(block); // Place the dragged block</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Compact the column after placement</p>
+<p class="p1"><span class="Apple-converted-space">    </span>collapseMainColumn();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function onDragStart(e) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>draggedBlock = e.target;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>draggedBlock.classList.add("dragging");</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function onDragEnd() {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (draggedBlock) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>draggedBlock.classList.remove("dragging");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>draggedBlock = null;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function onDrop(e) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>e.preventDefault();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const x = e.clientX;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const y = e.clientY;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (!draggedBlock) return;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const nearestCell = findNearestCell(x, y);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>if (nearestCell) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const col = nearestCell.dataset.col;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (col == mainColumn.toString()) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>placeBlockInMain(draggedBlock, nearestCell);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>console.warn("Blocks can only be moved within the main column.");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function findNearestCell(x, y) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const cells = Array.from(document.querySelectorAll(".cell"));</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let nearestCell = null;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let minDistance = Infinity;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>cells.forEach((cell) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const rect = cell.getBoundingClientRect();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const cellCenterX = rect.left + rect.width / 2;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const cellCenterY = rect.top + rect.height / 2;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const distance = Math.hypot(cellCenterX - x, cellCenterY - y);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (distance &lt; minDistance) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>nearestCell = cell;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>minDistance = distance;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>return nearestCell;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>function allowDrop(e) {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>e.preventDefault();</p>
+<p class="p1"><span class="Apple-converted-space">  </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>initializeGrid();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>// Add blocks with content for each line</p>
+<p class="p1">const mainCells = document.querySelectorAll(`.cell[data-col="${mainColumn}"]`);</p>
+<p class="p2"><br></p>
+<p class="p1">mainCells[0].appendChild(createBlock("Where are you now? Who lies beneath your spell tonight?&lt;br&gt;Whom else from rapture’s road will you expel tonight?", false, 1));</p>
+<p class="p2"><br></p>
+<p class="p1">mainCells[1].appendChild(createBlock("Those “Fabrics of Cashmere—” “to make Me beautiful—”&lt;br&gt;“Trinket”—to gem—“Me to adorn—How tell”—tonight?", false, 2));</p>
+<p class="p2"><br></p>
+<p class="p1">mainCells[2].appendChild(createBlock("I beg for haven: Prisons, let open your gates—&lt;br&gt;A refugee from Belief seeks a cell tonight.", false, 3));</p>
+<p class="p2"><br></p>
+<p class="p1">mainCells[3].appendChild(createBlock("God’s vintage loneliness has turned to vinegar—&lt;br&gt;All the archangels—their wings frozen—fell tonight.", false, 4));</p>
+<p class="p2"><br></p>
+<p class="p1">mainCells[4].appendChild(createBlock("Lord, cried out the idols, Don’t let us be broken;&lt;br&gt;Only we can convert the infidel tonight.", false, 5));</p>
+<p class="p2"><br></p>
+<p class="p1">mainCells[5].appendChild(createBlock("Mughal ceilings, let your mirrored convexities&lt;br&gt;multiply me at once under your spell tonight.", false, 6));</p>
+<p class="p2"><br></p>
+<p class="p1">mainCells[6].appendChild(createBlock("He’s freed some fire from ice in pity for Heaven.&lt;br&gt;He’s left open—for God—the doors of Hell tonight.", false, 7));</p>
+<p class="p2"><br></p>
+<p class="p1">mainCells[7].appendChild(createBlock("In the heart’s veined temple, all statues have been smashed.&lt;br&gt;No priest in saffron’s left to toll its knell tonight.", false, 8));</p>
+<p class="p2"><br></p>
+<p class="p1">mainCells[8].appendChild(createBlock("God, limit these punishments, there’s still Judgment Day—&lt;br&gt;I’m a mere sinner, I’m no infidel tonight.", false, 9));</p>
+<p class="p2"><br></p>
+<p class="p1">mainCells[9].appendChild(createBlock("Executioners near the woman at the window.&lt;br&gt;Damn you, Elijah, I’ll bless Jezebel tonight.", false, 10));</p>
+<p class="p1"><span class="Apple-converted-space">  </span>document.querySelectorAll(".cell").forEach((cell) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cell.addEventListener("dragover", allowDrop);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>cell.addEventListener("drop", onDrop);</p>
+<p class="p1"><span class="Apple-converted-space">  </span>});</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
