@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Static Hope Page</title>
+<style>
+  body {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.5fr 1fr 1fr; /* Adjusted main column width */
+    background: black;
+    overflow-y: auto; /* Enable vertical scrolling */
+  }
+
+  .cell {
+    border: 1px transparent; /* Transparent cell borders */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    height: 100px; /* Adjust the height of each row */
+  }
+
+  .block {
+    background: rgba(255, 255, 255, 0); /* Fully transparent block background */
+    color: white;
+    width: 80%;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column; /* Stack lines vertically */
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    position: relative;
+    transition: all 0.3s ease;
+    padding: 10px; /* Add padding */
+    box-sizing: border-box; /* Ensure padding is included in width/height calculations */
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+<script>
+  const cols = 5; // Fixed number of columns
+  const mainColumn = Math.floor(cols / 2);
+  const content = [
+    "Today we ask - What is it to hope?<br>A place for our dreams, is that why hope?",
+    "A place for me in a future I won't see,<br>A place for my desires, that is my hope.",
+    "The dreams we carry refuse to die,<br>A spark eternal, no last goodbye, hope.",
+    "The seeds we plant in the soil nearby,<br>Will bloom for those who will one day try, hope.",
+    "I want to belong in this place so wide<br>For a space beneath the same sky I hope.",
+    "When formulaic rules become guidelines instead,<br>Then the space in between implies hope.",
+    "Yet, through hoping, I find again<br>The real magic that is my hope.",
+    "A place so fickle, a place so fleeting<br>Why should I even stand by this hope?",
+    "The sun will rise, no matter how we cry, hope,<br>A gentle hand to lift us as we try, hope.",
+    "A source of light guiding me through the darkness<br>Against all hardship and doubt, I stand by hope.",
+    "A future that is grown and not manufactured,<br>Is a future where I want to rest my hope.",
+    "I want it to be ok to be wrong and messy,<br>I want save our selves from our high hope.",
+    "Today I want to be ok with being just me,<br>Tomorrow I will try to live free, fly hope!",
+    "A world full of sins but no sinners,<br>A world of losers and not winners, I hope",
+    "Somewhere where everyone can express and create,<br>Make space not for hate but joy and shy hope.",
+    "Be a bit dirty, kiss the land you are own,<br>Touch and know it's texture, there lies hope",
+    "As the clocks tick and we become history,<br>All we leave behind is our unified hope."
+  ];
+
+  function initializeGrid() {
+    // Calculate the required number of rows based on content
+    const rows = content.length;
+    document.body.style.gridTemplateRows = `repeat(${rows}, auto)`; // Adjust the rows dynamically
+
+    const fragment = document.createDocumentFragment();
+
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.dataset.row = row;
+        cell.dataset.col = col;
+        fragment.appendChild(cell);
+      }
+    }
+
+    document.body.appendChild(fragment);
+  }
+
+  // Populate only the main column
+  function populateMainColumn() {
+    const mainCells = document.querySelectorAll(`.cell[data-col="${mainColumn}"]`);
+    content.forEach((text, index) => {
+      const cell = mainCells[index];
+      if (cell) {
+        const block = document.createElement("div");
+        block.classList.add("block");
+        block.innerHTML = text;
+        cell.appendChild(block);
+      }
+    });
+  }
+
+  initializeGrid();
+  populateMainColumn();
+</script>
+</body>
+</html>
