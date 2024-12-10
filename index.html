@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Static Hope Page</title>
+<title>Dynamic Grid with Block Compaction</title>
 <style>
   body {
     margin: 0;
     display: grid;
+    grid-template-rows: repeat(10, 1fr);
     grid-template-columns: 1fr 1fr 1.5fr 1fr 1fr; /* Adjusted main column width */
+    height: 100vh;
     background: black;
-    overflow-y: auto; /* Enable vertical scrolling */
   }
 
   .cell {
@@ -19,87 +20,463 @@
     justify-content: center;
     align-items: center;
     position: relative;
-    height: 100px; /* Adjust the height of each row */
   }
 
-  .block {
+.block {
     background: rgba(255, 255, 255, 0); /* Fully transparent block background */
     color: white;
     width: 80%;
+    height: 80%;
     font-size: 0.8rem;
     display: flex;
     flex-direction: column; /* Stack lines vertically */
-    justify-content: center;
-    align-items: center;
+    justify-content: center; /* Center align lines vertically within the block */
+    align-items: center; /* Center align lines horizontally */
     border-radius: 5px;
+    cursor: grab;
     position: relative;
     transition: all 0.3s ease;
     padding: 10px; /* Add padding */
     box-sizing: border-box; /* Ensure padding is included in width/height calculations */
+}
+
+.line {
+    display: flex;
+    flex-direction: row; /* Ensure text and blanks are inline */
+    align-items: center; /* Align text and blanks vertically */
+    justify-content: center; /* Center align the text and blank horizontally */
+    width: 100%; /* Take up full width for alignment */
+    margin-bottom: 5px; /* Add spacing between lines */
+}
+  .block.trash {
+    color: gray;
+    font-size: .65rem;
+  }
+
+  .delete-btn {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    background: transparent; /* Transparent delete button background */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 1px;
+    height: 10px;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+  }
+
+  .block:not(.trash):hover .delete-btn {
+    display: block;
+  }
+
+  .editable {
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: inherit;
     text-align: center;
+    outline: none;
+    width: auto;
   }
 </style>
 </head>
 <body>
 <script>
-  const cols = 5; // Fixed number of columns
+  const rows = 12;
+  const cols = 5;
   const mainColumn = Math.floor(cols / 2);
-  const content = [
-    "Today we ask - What is it to hope?<br>A place for our dreams, is that why hope?",
-    "A place for me in a future I won't see,<br>A place for my desires, that is my hope.",
-    "The dreams we carry refuse to die,<br>A spark eternal, no last goodbye, hope.",
-    "The seeds we plant in the soil nearby,<br>Will bloom for those who will one day try, hope.",
-    "I want to belong in this place so wide<br>For a space beneath the same sky I hope.",
-    "When formulaic rules become guidelines instead,<br>Then the space in between implies hope.",
-    "Yet, through hoping, I find again<br>The real magic that is my hope.",
-    "A place so fickle, a place so fleeting<br>Why should I even stand by this hope?",
-    "The sun will rise, no matter how we cry, hope,<br>A gentle hand to lift us as we try, hope.",
-    "A source of light guiding me through the darkness<br>Against all hardship and doubt, I stand by hope.",
-    "A future that is grown and not manufactured,<br>Is a future where I want to rest my hope.",
-    "I want it to be ok to be wrong and messy,<br>I want save our selves from our high hope.",
-    "Today I want to be ok with being just me,<br>Tomorrow I will try to live free, fly hope!",
-    "A world full of sins but no sinners,<br>A world of losers and not winners, I hope",
-    "Somewhere where everyone can express and create,<br>Make space not for hate but joy and shy hope.",
-    "Be a bit dirty, kiss the land you are own,<br>Touch and know it's texture, there lies hope",
-    "As the clocks tick and we become history,<br>All we leave behind is our unified hope."
-  ];
+  let draggedBlock = null;
 
   function initializeGrid() {
-    // Calculate the required number of rows based on content
-    const rows = content.length;
-    document.body.style.gridTemplateRows = `repeat(${rows}, auto)`; // Adjust the rows dynamically
+  const fragment = document.createDocumentFragment();
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.dataset.row = row;
+      cell.dataset.col = col;
 
-    const fragment = document.createDocumentFragment();
+      // Add specified content to trash cells
+      if (col !== mainColumn) { // Only trash cells (not in the main column)
+        const trashBlocks = [
+          "source of light guiding me through the darkness<br>Against all hardship and doubt, I stand by hope.",
+          "A future that is grown and not manufactured,<br>Is a future where I want to rest my hope",
+          "I want it to be ok to be wrong and messy,<br>I want save our selves from our high hope.",
+          "Today I want to be ok with being just me,<br>Tomorrow I will try to live free, fly hope!",
+          "A world full of sins but no sinners,<br>A world of losers and not winners, I hope",
+          "Somewhere where everyone can express and create,<br>Make space not for hate but joy and shy hope.",
+          "Be a bit dirty, kiss the land you are own,<br>Touch and know it's texture, there lies hope"
+        ];
 
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        const cell = document.createElement("div");
-        cell.classList.add("cell");
-        cell.dataset.row = row;
-        cell.dataset.col = col;
-        fragment.appendChild(cell);
+        // Place blocks in specific trash cells
+        const trashBlockMapping = [
+          { row: 0, col: 0, content: trashBlocks[0] },
+          { row: 1, col: 4, content: trashBlocks[1] },
+          { row: 2, col: 0, content: trashBlocks[2] },
+          { row: 3, col: 4, content: trashBlocks[3] },
+          { row: 4, col: 0, content: trashBlocks[4] },
+          { row: 5, col: 4, content: trashBlocks[5] },
+          { row: 6, col: 0, content: trashBlocks[6] }
+        ];
+
+        const blockData = trashBlockMapping.find(
+          (mapping) => mapping.row === row && mapping.col === col
+        );
+
+        if (blockData) {
+          const block = createBlock(blockData.content, true); // Set isTrash = true
+          block.classList.add("trash"); // Add trash-specific styling
+          const editableElement = block.querySelector(".editable");
+          if (editableElement) {
+            editableElement.contentEditable = false; // Make non-editable
+          }
+          cell.appendChild(block);
+        }
       }
+
+      fragment.appendChild(cell);
+    }
+  }
+  document.body.appendChild(fragment);
+}
+
+  function createBlock(content, isTrash = false, blockIndex = null) {
+    const block = document.createElement("div");
+    block.classList.add("block");
+    block.draggable = true;
+
+    // Word limit for blanks
+    const maxWords = 11;
+
+    // Handle fill-in-the-blank template for new blocks
+if (content === "New Block") {
+  const templateParts = ["_______________ ", "_______________ hope"];
+
+  templateParts.forEach((part) => {
+    // Create a new div for each line
+    const lineDiv = document.createElement("div");
+    lineDiv.classList.add("line");
+
+    // Add the non-editable part before the blank if it exists
+    const [beforeBlank, afterBlank] = part.split("_______________ ");
+
+    if (beforeBlank) {
+      const spanBefore = document.createElement("span");
+      spanBefore.innerHTML = beforeBlank; // Non-editable text before blank
+      lineDiv.appendChild(spanBefore);
     }
 
-    document.body.appendChild(fragment);
-  }
+    // Add an editable blank
+    const blank = document.createElement("span");
+    blank.contentEditable = "true"; // Make blank editable
+    blank.classList.add("editable");
+    blank.textContent = "_______________"; // Placeholder for blank
 
-  // Populate only the main column
-  function populateMainColumn() {
-    const mainCells = document.querySelectorAll(`.cell[data-col="${mainColumn}"]`);
-    content.forEach((text, index) => {
-      const cell = mainCells[index];
-      if (cell) {
-        const block = document.createElement("div");
-        block.classList.add("block");
-        block.innerHTML = text;
-        cell.appendChild(block);
+    // Add word limit enforcement for blanks
+    blank.addEventListener("input", () => {
+      const words = blank.textContent.trim().split(/\s+/);
+      if (words.length > maxWords) {
+        blank.textContent = words.slice(0, maxWords).join(" "); // Trim to maxWords
       }
     });
+
+    lineDiv.appendChild(blank);
+
+    // Add the non-editable part after the blank if it exists
+    if (afterBlank) {
+      const spanAfter = document.createElement("span");
+      spanAfter.innerHTML = afterBlank; // Non-editable text after blank
+      lineDiv.appendChild(spanAfter);
+    }
+
+    // Append the lineDiv to the block
+    block.appendChild(lineDiv);
+  });
+}
+    else {
+      // Regular block content
+      const text = document.createElement("div");
+      text.textContent = content;
+      text.innerHTML = content.replace(/\n/g, "<br>"); // Convert \n to <br> for line breaks
+      text.classList.add("editable");
+      block.appendChild(text);
+    }
+
+    // Add delete button for non-fixed blocks
+    if (!isTrash && blockIndex !== 1 && blockIndex !== 10) {
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "X";
+      deleteBtn.classList.add("delete-btn");
+      deleteBtn.addEventListener("click", () => deleteBlock(block));
+      block.appendChild(deleteBtn);
+    } else if (blockIndex === 1 || blockIndex === 10) {
+      block.dataset.fixed = "true"; // Mark fixed blocks
+    }
+
+    block.addEventListener("dragstart", onDragStart);
+    block.addEventListener("dragend", onDragEnd);
+
+    return block;
+  }
+
+  function deleteBlock(block) {
+    if (block.dataset.fixed === "true") {
+      console.warn("Cannot delete Fixed Top or Block 10.");
+      return;
+    }
+
+    const parentCell = block.parentElement;
+    if (!parentCell) return;
+
+    sendBlockToNearestTrash(block, parentCell);
+
+    const newBlock = createBlock("New Block", false, null); // Use null or default values
+    parentCell.appendChild(newBlock);
+
+    collapseMainColumn();
+  }
+
+  function sendBlockToNearestTrash(block, originCell) {
+    const trashCells = Array.from(document.querySelectorAll(`.cell:not([data-col="${mainColumn}"])`));
+    const originRow = parseInt(originCell.dataset.row, 10);
+
+    // Filter cells in the same row
+    const sameRowCells = trashCells.filter((cell) => parseInt(cell.dataset.row, 10) === originRow);
+
+    // Sort cells in the same row by column proximity to the main column
+    const sortedSameRowCells = sameRowCells.sort((a, b) => {
+      const colA = Math.abs(parseInt(a.dataset.col, 10) - mainColumn);
+      const colB = Math.abs(parseInt(b.dataset.col, 10) - mainColumn);
+      return colA - colB; // Prioritize closer columns
+    });
+
+    // Check for the nearest empty cell in the same row
+    const nearestSameRowCell = sortedSameRowCells.find((cell) => !cell.querySelector(".block"));
+
+    if (nearestSameRowCell) {
+      nearestSameRowCell.appendChild(block); // Move block to the nearest empty cell in the same row
+      block.classList.add("trash"); // Add trash-specific styling
+      block.querySelector(".editable").contentEditable = false; // Make block non-editable in trash
+      return;
+    }
+
+    // Expand to other rows if no cell in the same row is available
+    const rowsAboveAndBelow = trashCells.filter((cell) => parseInt(cell.dataset.row, 10) !== originRow);
+
+    // Sort rows alternately above and below the origin row and prioritize column proximity
+    const sortedOtherRowCells = rowsAboveAndBelow.sort((a, b) => {
+      const rowA = parseInt(a.dataset.row, 10);
+      const rowB = parseInt(b.dataset.row, 10);
+
+      const rowDiffA = Math.abs(rowA - originRow);
+      const rowDiffB = Math.abs(rowB - originRow);
+
+      // If rows are equally distant, sort by proximity to the main column
+      if (rowDiffA === rowDiffB) {
+        const colA = Math.abs(parseInt(a.dataset.col, 10) - mainColumn);
+        const colB = Math.abs(parseInt(b.dataset.col, 10) - mainColumn);
+        return colA - colB;
+      }
+
+      return rowDiffA - rowDiffB;
+    });
+
+    // Find the nearest empty cell in other rows
+    const nearestOtherRowCell = sortedOtherRowCells.find((cell) => !cell.querySelector(".block"));
+
+    if (nearestOtherRowCell) {
+      nearestOtherRowCell.appendChild(block); // Move block to the nearest empty cell in other rows
+      block.classList.add("trash"); // Add trash-specific styling
+      block.querySelector(".editable").contentEditable = false; // Make block non-editable in trash
+    } else {
+      console.warn("No empty space in the trash.");
+    }
+  }
+
+  function collapseMainColumn() {
+    const mainCells = Array.from(document.querySelectorAll(`.cell[data-col="${mainColumn}"]`));
+
+    for (let i = 1; i < mainCells.length - 2; i++) { // Avoid collapsing into Block 10
+      const currentCell = mainCells[i];
+      if (!currentCell.querySelector(".block")) {
+        for (let j = i + 1; j < mainCells.length - 1; j++) {
+          const nextCell = mainCells[j];
+          const blockToMove = nextCell.querySelector(".block");
+          if (blockToMove) {
+            currentCell.appendChild(blockToMove);
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  function pushBlockDown(block, targetCell) {
+    const mainCells = Array.from(document.querySelectorAll(`.cell[data-col="${mainColumn}"]`));
+    const targetIndex = mainCells.indexOf(targetCell);
+
+    // Prevent pushing into the cell below Block 10
+    if (targetIndex >= mainCells.length - 2) {
+      console.warn("Cannot push blocks below Block 10.");
+      return;
+    }
+
+    const nextCell = mainCells[targetIndex + 1];
+
+    if (nextCell.querySelector(".block")) {
+      const blockToPush = nextCell.querySelector(".block");
+      pushBlockDown(blockToPush, nextCell);
+    }
+
+    nextCell.appendChild(block);
+  }
+
+  function placeBlockInMain(block, targetCell) {
+  const mainCells = Array.from(document.querySelectorAll(`.cell[data-col="${mainColumn}"]`));
+  const targetIndex = mainCells.indexOf(targetCell);
+
+  // Count the total number of blocks in the main column
+  const totalBlocks = mainCells.reduce((count, cell) => count + (cell.querySelector(".block") ? 1 : 0), 0);
+
+  // Prevent exceeding 10 blocks
+  if (totalBlocks >= 10 && !block.parentElement) {
+    console.warn("Cannot add more than 10 blocks to the main column.");
+    return;
+  }
+
+  // Restrict placement to middle cells and avoid placing below Block 10
+  if (targetIndex <= 0 || targetIndex >= mainCells.length - 1) {
+    console.warn("Blocks cannot replace Fixed Top or Block 10.");
+    return;
+  }
+
+  // Prevent placing blocks in the cell directly below Block 10
+  if (targetIndex === mainCells.length - 2) {
+    console.warn("Cannot place blocks below Block 10.");
+    return;
+  }
+
+  // Check if the block is from the trash
+  if (block.classList.contains("trash")) {
+    // Add delete button if missing
+    if (!block.querySelector(".delete-btn")) {
+      const deleteBtn = document.createElement("button");
+      deleteBtn.textContent = "X";
+      deleteBtn.classList.add("delete-btn");
+      deleteBtn.addEventListener("click", () => deleteBlock(block));
+      block.appendChild(deleteBtn);
+    }
+
+    // Replace the block in the target cell
+    if (targetCell.querySelector(".block")) {
+      const existingBlock = targetCell.querySelector(".block");
+      sendBlockToNearestTrash(existingBlock, targetCell); // Send the replaced block to the trash
+    }
+    targetCell.appendChild(block); // Place the block from the trash
+    block.classList.remove("trash"); // Remove trash-specific styling
+    const editableElement = block.querySelector(".editable");
+    if (editableElement) {
+      editableElement.contentEditable = true; // Make block editable again
+    }
+  } else {
+    // Handle blocks already in the main column
+    if (targetCell.querySelector(".block")) {
+      const existingBlock = targetCell.querySelector(".block");
+      pushBlockDown(existingBlock, targetCell); // Push down the existing block
+    }
+    targetCell.appendChild(block); // Place the dragged block
+  }
+
+  // Compact the column after placement
+  collapseMainColumn();
+}
+
+  function onDragStart(e) {
+    draggedBlock = e.target;
+    draggedBlock.classList.add("dragging");
+  }
+
+  function onDragEnd() {
+    if (draggedBlock) {
+      draggedBlock.classList.remove("dragging");
+      draggedBlock = null;
+    }
+  }
+
+  function onDrop(e) {
+    e.preventDefault();
+    const x = e.clientX;
+    const y = e.clientY;
+
+    if (!draggedBlock) return;
+
+    const nearestCell = findNearestCell(x, y);
+    if (nearestCell) {
+      const col = nearestCell.dataset.col;
+
+      if (col == mainColumn.toString()) {
+        placeBlockInMain(draggedBlock, nearestCell);
+      } else {
+        console.warn("Blocks can only be moved within the main column.");
+      }
+    }
+  }
+
+  function findNearestCell(x, y) {
+    const cells = Array.from(document.querySelectorAll(".cell"));
+    let nearestCell = null;
+    let minDistance = Infinity;
+
+    cells.forEach((cell) => {
+      const rect = cell.getBoundingClientRect();
+      const cellCenterX = rect.left + rect.width / 2;
+      const cellCenterY = rect.top + rect.height / 2;
+      const distance = Math.hypot(cellCenterX - x, cellCenterY - y);
+      if (distance < minDistance) {
+        nearestCell = cell;
+        minDistance = distance;
+      }
+    });
+
+    return nearestCell;
+  }
+
+  function allowDrop(e) {
+    e.preventDefault();
   }
 
   initializeGrid();
-  populateMainColumn();
+
+  // Add blocks with content for each line
+const mainCells = document.querySelectorAll(`.cell[data-col="${mainColumn}"]`);
+
+mainCells[0].appendChild(createBlock("Today we ask - What is it to hope?<br>A place for our dreams, is that why hope?", false, 1));
+
+mainCells[1].appendChild(createBlock("A place for me in a future I won't see,<br>A place for my desires, that is my hope.", false, 2));
+
+mainCells[2].appendChild(createBlock("The dreams we carry refuse to die,<br>A spark eternal, no last goodbye, hope.", false, 3));
+
+mainCells[3].appendChild(createBlock("The seeds we plant in the soil nearby,<br>Will bloom for those who will one day try, hope.", false, 4));
+
+mainCells[4].appendChild(createBlock("I want to belong in this place so wide<br>For a space beneath the same sky I hope.", false, 5));
+
+mainCells[5].appendChild(createBlock("When formulaic rules become guidelines instead,<br>Then the space in between implies hope.", false, 6));
+
+mainCells[6].appendChild(createBlock("Yet, through hoping, I find again<br>The real magic that is my hope.", false, 7));
+
+mainCells[7].appendChild(createBlock("A place so fickle, a place so fleeting<br>Why should I even stand by this hope?", false, 8));
+
+mainCells[8].appendChild(createBlock("The sun will rise, no matter how we cry, hope,<br>A gentle hand to lift us as we try, hope.", false, 9));
+
+mainCells[9].appendChild(createBlock("As the clocks tick and we become history,<br>All we leave behind is our unified hope.", false, 10));
+
+document.querySelectorAll(".cell").forEach((cell) => {
+    cell.addEventListener("dragover", allowDrop);
+    cell.addEventListener("drop", onDrop);
+  });
 </script>
 </body>
 </html>
